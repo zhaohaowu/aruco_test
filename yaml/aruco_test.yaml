@@ -1,0 +1,37 @@
+image_sub_topic: /raspicam_node/image/compressed
+
+image_pub_topic: /aruco_test/image
+
+T_pub_topic: /position
+
+marker_size: 0.096
+
+intrinsic: /home/zhw/test/src/aruco_test/yaml/turtlebot3.yml
+
+extrinsic:
+    #Tcr是机器人在相机坐标系下的位置和姿态
+    #https://zhaohaowu.github.io/image/aruco_test.jpg
+    Tcr:
+        [-1.0, 0.0,  0.0,  0.0,
+        0.0,  0.0,  -1.0,  0.2,
+        0.0,  -1.0, 0.0,  -0.05,
+        0.0,  0.0,  0.0,  1.0]
+    #Twm是aruco码在世界坐标系下的位置和姿态
+    Twm33:
+        [-1.0, 0.0,  0.0,  1.0,
+        0.0,  0.0,  1.0,  -1.0,
+        0.0,  1.0,  0.0,  0.5,
+        0.0,  0.0,  0.0,  1.0]
+    Twm34:
+        [-1.0, 0.0,  0.0,  2.0,
+        0.0,  0.0,  1.0,  -1.0,
+        0.0,  1.0,  0.0,  0.5,
+        0.0,  0.0,  0.0,  1.0]
+
+
+
+
+
+
+
+

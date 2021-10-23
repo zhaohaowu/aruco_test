@@ -57,27 +57,31 @@ cv::Mat test::addImage ( cv::Mat TheInputImageCopy )
 			T_wr = T_wm34 * T_mc * T_cr;
 		}
 		// std::cout << "T_wr:\n" << T_wr << std::endl;
-		aruco_test::position msg;
-		msg.x = T_mc.at<float>(0, 3);
-		msg.y = T_mc.at<float>(1, 3);
-		msg.z = T_mc.at<float>(2, 3);
-		msg.x0 = T_wr.at<float>(0, 0);
-		msg.x1 = T_wr.at<float>(0, 1);
-		msg.x2 = T_wr.at<float>(0, 2);
-		msg.x3 = T_wr.at<float>(0, 3);
-		msg.x4 = T_wr.at<float>(1, 0);
-		msg.x5 = T_wr.at<float>(1, 1);
-		msg.x6 = T_wr.at<float>(1, 2);
-		msg.x7 = T_wr.at<float>(1, 3);
-		msg.x8 = T_wr.at<float>(2, 0);
-		msg.x9 = T_wr.at<float>(2, 1);
-		msg.x10 = T_wr.at<float>(2, 2);
-		msg.x11 = T_wr.at<float>(2, 3);
-		msg.x12 = T_wr.at<float>(3, 0);
-		msg.x13 = T_wr.at<float>(3, 1);
-		msg.x14 = T_wr.at<float>(3, 2);
-		msg.x15 = T_wr.at<float>(3, 3);
-		pub.publish(msg);
+		if(T_mc.rows!=0)
+		{
+			aruco_test::position msg;
+			msg.x = T_mc.at<float>(0, 3);
+			msg.y = T_mc.at<float>(1, 3);
+			msg.z = T_mc.at<float>(2, 3);
+			msg.x0 = T_wr.at<float>(0, 0);
+			msg.x1 = T_wr.at<float>(0, 1);
+			msg.x2 = T_wr.at<float>(0, 2);
+			msg.x3 = T_wr.at<float>(0, 3);
+			msg.x4 = T_wr.at<float>(1, 0);
+			msg.x5 = T_wr.at<float>(1, 1);
+			msg.x6 = T_wr.at<float>(1, 2);
+			msg.x7 = T_wr.at<float>(1, 3);
+			msg.x8 = T_wr.at<float>(2, 0);
+			msg.x9 = T_wr.at<float>(2, 1);
+			msg.x10 = T_wr.at<float>(2, 2);
+			msg.x11 = T_wr.at<float>(2, 3);
+			msg.x12 = T_wr.at<float>(3, 0);
+			msg.x13 = T_wr.at<float>(3, 1);
+			msg.x14 = T_wr.at<float>(3, 2);
+			msg.x15 = T_wr.at<float>(3, 3);
+			pub.publish(msg);
+		}
+
 	}
 	// std::cout << "\n\n OK \n\n";
 	cv::imshow("aruco_detect",TheInputImageCopy);
@@ -87,7 +91,7 @@ cv::Mat test::addImage ( cv::Mat TheInputImageCopy )
 
 test* g_slam;
 
-void callback(const sensor_msgs::ImageConstPtr& img_ptr)
+void callback(const sensor_msgs::CompressedImageConstPtr& img_ptr)
 {
 	cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img_ptr, sensor_msgs::image_encodings::BGR8);
 	cv::Mat img = g_slam->addImage(cv_ptr->image);

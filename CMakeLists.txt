@@ -40,3 +40,11 @@ target_link_libraries(aruco_test
   ${aruco_LIBS}
 )
 add_dependencies(aruco_test ${PROJECT_NAME}_gencpp)
+
+add_executable(aruco_dev src/aruco_dev.cpp)
+target_link_libraries(aruco_dev
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${aruco_LIBS}
+)
+add_dependencies(aruco_dev ${PROJECT_NAME}_gencpp)
