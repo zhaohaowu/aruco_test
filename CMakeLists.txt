@@ -31,6 +31,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${aruco_INCLUDE_DIRS}
+  /usr/include/eigen3
 )
 
 add_executable(aruco_test src/aruco_test.cpp)

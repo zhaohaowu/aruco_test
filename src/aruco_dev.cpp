@@ -60,7 +60,6 @@ int main(int argc, char** argv)
 	{
 		videox >> img;
 		TheMarkers = MDetector.detect(img, TheCameraParameters, TheMarkerSize);
-		if (TheCameraParameters.isValid() && TheMarkerSize > 0)
     	for (unsigned int i = 0; i < TheMarkers.size(); i++)
     	{
 			TheMarkers[i].draw(img, cv::Scalar(0, 0, 255),2,true);
@@ -82,6 +81,21 @@ int main(int argc, char** argv)
 				T_mc = T_cm.inv();
 				T_wr = T_wm34 * T_mc * T_cr;
 			}
+		if(marker.id == 33 || marker.id == 34)
+		{
+			n.setParam("flag", 1);
+			n.setParam("aruco_x", T_wr.at<float>(0, 3));
+			n.setParam("aruco_y", T_wr.at<float>(1, 3));
+			n.setParam("x0", T_wr.at<float>(0, 0));
+			n.setParam("x1", T_wr.at<float>(0, 1));
+			n.setParam("x2", T_wr.at<float>(0, 2));
+			n.setParam("x4", T_wr.at<float>(1, 0));
+			n.setParam("x5", T_wr.at<float>(1, 1));
+			n.setParam("x6", T_wr.at<float>(1, 2));
+			n.setParam("x8", T_wr.at<float>(2, 0));
+			n.setParam("x9", T_wr.at<float>(2, 1));
+			n.setParam("x10", T_wr.at<float>(2, 2));
+		}
 			// std::cout << "T_wr:\n" << T_wr << std::endl;
 			if(T_mc.rows!=0)
 			{

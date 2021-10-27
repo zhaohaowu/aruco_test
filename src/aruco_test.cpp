@@ -7,6 +7,9 @@
 #include <aruco/aruco.h>
 #include <time.h>
 #include "cvdrawingutils.h"
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+
 
 image_transport::Publisher img_pub;
 ros::Subscriber sub;
@@ -18,28 +21,28 @@ cv::Mat TheInputImageCopy;
 aruco::CameraParameters TheCameraParameters;
 float TheMarkerSize;
 std::map<uint32_t, aruco::MarkerPoseTracker> MTracker; 
-
 clock_t start,end;
 
 class test
 {
 	public:
-		// ros::NodeHandle n_;
-		// test(ros::NodeHandle n):n_(n){}
+		ros::NodeHandle n_;
+		test(ros::NodeHandle n):n_(n){}
 		cv::Mat addImage(cv::Mat img); 
 		cv::Mat T_cm, T_wr, T_wm33, T_wm34, T_mc, T_cr;
-		cv::Mat pose;
+		Eigen::Matrix3d R;
+		Eigen::Quaterniond Q_wxyz;
+		Eigen::Vector3d eulerAngle;
 };
 
 cv::Mat test::addImage ( cv::Mat TheInputImageCopy )
 {
     TheMarkers = MDetector.detect(TheInputImageCopy, TheCameraParameters, TheMarkerSize);
-	if (TheCameraParameters.isValid() && TheMarkerSize > 0)
-    for (unsigned int i = 0; i < TheMarkers.size(); i++)
+	for (unsigned int i = 0; i < TheMarkers.size(); i++)
     {
-	TheMarkers[i].draw(TheInputImageCopy, cv::Scalar(0, 0, 255),2,true);
-    aruco::CvDrawingUtils::draw3dCube(TheInputImageCopy, TheMarkers[i], TheCameraParameters);
-    aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheMarkers[i], TheCameraParameters);
+		TheMarkers[i].draw(TheInputImageCopy, cv::Scalar(0, 0, 255),2,true);
+    	aruco::CvDrawingUtils::draw3dCube(TheInputImageCopy, TheMarkers[i], TheCameraParameters);
+    	aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheMarkers[i], TheCameraParameters);
     }
 	for (auto& marker : TheMarkers)
     {
@@ -50,12 +53,50 @@ cv::Mat test::addImage ( cv::Mat TheInputImageCopy )
 		{
 			T_mc = T_cm.inv();
 			T_wr = T_wm33 * T_mc * T_cr;
+			n_.setParam("flag", 1);
+			n_.setParam("aruco_x", T_wr.at<float>(0, 3));
+			n_.setParam("aruco_y", T_wr.at<float>(1, 3));
+			// n_.setParam("x1", T_wr.at<float>(0, 0));
+			// n_.setParam("x2", T_wr.at<float>(0, 1));
+			// n_.setParam("x3", T_wr.at<float>(0, 2));
+			// n_.setParam("x4", T_wr.at<float>(1, 0));
+			// n_.setParam("x5", T_wr.at<float>(1, 1));
+			// n_.setParam("x6", T_wr.at<float>(1, 2));
+			// n_.setParam("x7", T_wr.at<float>(2, 0));
+			// n_.setParam("x8", T_wr.at<float>(2, 1));
+			// n_.setParam("x9", T_wr.at<float>(2, 2));
+	
+			R << T_wr.at<float>(0, 0), T_wr.at<float>(0, 1), T_wr.at<float>(0, 2),
+			     T_wr.at<float>(1, 0), T_wr.at<float>(1, 1), T_wr.at<float>(1, 2),
+				 T_wr.at<float>(2, 0), T_wr.at<float>(2, 1), T_wr.at<float>(2, 2);
+			eulerAngle = R.eulerAngles(2,1,0);//yaw pitch roll顺序
+			n_.setParam("aruco_yaw", eulerAngle[0]);
+			Q_wxyz = R;
+			n_.setParam("aruco_qx", Q_wxyz.x());
+			n_.setParam("aruco_qy", Q_wxyz.y());
+			n_.setParam("aruco_qz", Q_wxyz.z());
+			n_.setParam("aruco_qw", Q_wxyz.w());
+		
 		}
 		else if(T_cm.rows != 0 && T_cm.cols != 0 && marker.id==34)
 		{
 			T_mc = T_cm.inv();
 			T_wr = T_wm34 * T_mc * T_cr;
+			n_.setParam("flag", 1);
+			n_.setParam("aruco_x", T_wr.at<float>(0, 3));
+			n_.setParam("aruco_y", T_wr.at<float>(1, 3));
+			R << T_wr.at<float>(0, 0), T_wr.at<float>(0, 1), T_wr.at<float>(0, 2),
+			T_wr.at<float>(1, 0), T_wr.at<float>(1, 1), T_wr.at<float>(1, 2),
+			T_wr.at<float>(2, 0), T_wr.at<float>(2, 1), T_wr.at<float>(2, 2);
+			eulerAngle = R.eulerAngles(2,1,0);//yaw pitch roll顺序
+			n_.setParam("aruco_yaw", eulerAngle[0]);
+			Q_wxyz = R;
+			n_.setParam("aruco_qx", Q_wxyz.x());
+			n_.setParam("aruco_qy", Q_wxyz.y());
+			n_.setParam("aruco_qz", Q_wxyz.z());
+			n_.setParam("aruco_qw", Q_wxyz.w());
 		}
+		n_.setParam("flag", 0);
 		// std::cout << "T_wr:\n" << T_wr << std::endl;
 		if(T_mc.rows!=0)
 		{
@@ -110,8 +151,8 @@ int main(int argc, char** argv)
 	n.getParam("/aruco_test/marker_size", TheMarkerSize);
 	MDetector.setDictionary("ALL_DICTS");  
 	MDetector.getParameters().detectEnclosedMarkers(0); 
-	// g_slam = new test(n);
-	g_slam = new test();
+	g_slam = new test(n);
+	// g_slam = new test();
 
 	std::vector<float> Twm33;
 	n.getParam("/aruco_test/extrinsic/Twm33", Twm33);
